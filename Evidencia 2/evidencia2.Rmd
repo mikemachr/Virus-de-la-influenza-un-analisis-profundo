@@ -1,0 +1,187 @@
+---
+title: "Evidencia 2: Proyecto integrador"
+Miguel Angel Chavez Robles A01620402 grupo 801 
+---
+Dependencias
+```{r}
+#Como dijo el pibe del video, yo no lo descargo por que ya lo tengo 
+#install.packages(c("BiocManager","adegenet","ape","geiger","phytools","phangorn"))
+#BiocManager::install("Biostrings")
+#BiocManager::install("DECIPHER")
+#BiocManager::install("viridis")
+library(Biostrings)
+library(seqinr)
+library(adegenet)
+library(ape)
+library(DECIPHER)
+library(viridis)
+library(phytools)
+library(phangorn)
+library(geiger)
+library(seqinr)
+library(ggplot2)
+
+```
+
+Obtén las secuencias de las variantes mexicanas del virus desde el NCBI (Enlaces a un sitio externo.) y secuencias de las variantes de los continentes del mundo. El total de variantes que debes tener son: todas las variantes mexicanas y una variante por continente (de América incluir la de otro país).
+
+```{r}
+carga_secuencias=function(archivo){
+  x=read.fasta(file = archivo, 
+  seqtype = "DNA",set.attributes = FALSE,seqonly = TRUE)
+x=unlist(x)
+x=s2c(x)
+return(x)
+}
+
+
+#Mexico
+MK633745=carga_secuencias("Secuencias/MK633745.1.fasta")
+MH701684=carga_secuencias("Secuencias/MH701684.1.fasta")
+CY125728=carga_secuencias("Secuencias/CY125728.1.fasta")
+#Madagascar
+JQ733142=carga_secuencias("Secuencias/JQ733142.1.fasta")
+EU502556=carga_secuencias("Secuencias/EU502556.1.fasta")
+#España
+MK913190=carga_secuencias("Secuencias/MK913190.1.fasta")
+MN074011=carga_secuencias("Secuencias/MN074011.1.fasta")
+#China
+MT102472=carga_secuencias("Secuencias/MT102472.1.fasta")
+KM392403=carga_secuencias("Secuencias/KM392403.1.fasta")
+#USA
+MT331377=carga_secuencias("Secuencias/MT331377.1.fasta")
+MT375632=carga_secuencias("Secuencias/MT375632.1.fasta")
+CY020413=carga_secuencias("Secuencias/CY020413.1.fasta")
+#Australia
+CY092462=carga_secuencias("Secuencias/CY092462.1.fasta")
+MN569127=carga_secuencias("Secuencias/MN569127.1.fasta")
+KP098400=carga_secuencias("secuencias/KP098400.1.fasta")
+```
+
+Calcula el número de bases de cada variante por continente.
+```{r}
+nucleotidos=function(x,caract){
+  return(sum(x==caract))
+}
+imprimir=function(nombre,datos){
+print(paste("El total de Adenina en el", nombre,"es",nucleotidos(datos,"A"),"lo que corresponde a un ",nucleotidos(datos,"A")/length(datos)*100,"%"))
+print(paste("El total de Thimina en el", nombre,"es",nucleotidos(datos,"T"),"lo que corresponde a un ",nucleotidos(datos,"T")/length(datos)*100,"%"))
+print(paste("El total de Citosina en el", nombre,"es",nucleotidos(datos,"C"),"lo que corresponde a un ",nucleotidos(datos,"C")/length(datos)*100,"%"))
+print(paste("El total de Guanina en el", nombre,"es",nucleotidos(datos,"G"),"lo que corresponde a un ",nucleotidos(datos,"G")/length(datos)*100,"%"))
+
+a=nucleotidos(datos,"A")
+t=nucleotidos(datos,"T")
+c=nucleotidos(datos,"C")
+g=nucleotidos(datos,"G")
+
+return(data.frame(a,t,c,g))
+
+}
+#Mexico
+nucleotidos_MK633745=imprimir("MK633745",MK633745)
+nucleotidos_MH701684=imprimir("MH701684",MH701684)
+nucleotidos_CY125728=imprimir("CY125728",CY125728)
+#Madagascar
+nucleotidos_JQ733142=imprimir("JQ733142",JQ733142)
+nucleotidos_EU502556=imprimir("EU502556",EU502556)
+#España
+nucleotidos_MK913190=imprimir("MK913190",MK913190)
+nucleotidos_MN074011=imprimir("MN074011",MN074011)
+#China
+nucleotidos_MT102472=imprimir("MT102472",MT102472)
+nucleotidos_KM392403=imprimir("KM392403",KM392403)
+#USA
+nucleotidos_MT331377=imprimir("MT331377",MT331377)
+nucleotidos_MT375632=imprimir("MT375632",MT375632)
+nucleotidos_CY020413=imprimir("CY020413",CY020413)
+#Australia
+nucleotidos_CY092462=imprimir("CY092462",CY092462)
+nucleotidos_MN569127=imprimir("MN569127",MN569127)
+nucleotidos_KP098400=imprimir("KP098400",KP098400)
+```
+
+Crea una gráfica donde compares todas las variantes del virus y las bases de ADN que los componen (por continente). 
+```{r}
+totales=function(x,caract){
+  return(sum(x==caract))
+}
+
+plotter=function(continente,datos,mensaje){
+  par(mfrow=c(2,2))
+barplot(datos$Adenina, main=paste("Adenina en las variantes en",continente),
+  xlab="Virus", col=rainbow(10),names=datos$Virus)
+barplot(datos$Thimina, main=paste("Thimina en las variantes en",continente),
+  xlab="Virus", col=rainbow(10),names=datos$Virus)
+barplot(datos$Citosina, main=paste("Citosina en las variantes en",continente),
+  xlab="Virus", col=rainbow(10),names=datos$Virus)
+barplot(datos$Guanina, main=paste("Guanina en las variantes en",continente),
+  xlab="Virus", col=rainbow(10),names=datos$Virus)
+print(mensaje)
+}
+mexico=data.frame(Virus=c("MK633745", "MH701684","CY125728"),
+Adenina=c(totales(MK633745,"A"),totales(MH701684,"A"),totales(CY125728,"A")),
+Thimina=c(totales(MK633745,"T"),totales(MH701684,"T"),totales(CY125728,"T")),
+Citosina=c(totales(MK633745,"C"),totales(MH701684,"C"),totales(CY125728,"C")),
+Guanina=c(totales(MK633745,"G"),totales(MH701684,"G"),totales(CY125728,"G")))
+
+america=data.frame(Virus=c("MT331377","MT375632","CY020413"),
+Adenina=c(totales(MT331377,"A"),totales(MT375632,"A"),totales(CY020413,"A")),
+Thimina=c(totales(MT331377,"T"),totales(MT375632,"T"),totales(CY020413,"T")),
+Citosina=c(totales(MT331377,"C"),totales(MT375632,"C"),totales(CY020413,"C")),
+Guanina=c(totales(MT331377,"G"),totales(MT375632,"G"),totales(CY020413,"G")))
+
+europa=data.frame(Virus=c("MK913190","MN074011"),
+Adenina=c(totales(MK913190,"A"),totales(MN074011,"A")),
+Thimina=c(totales(MK913190,"T"),totales(MN074011,"T")),
+Citosina=c(totales(MK913190,"C"),totales(MN074011,"C")),
+Guanina=c(totales(MK913190,"G"),totales(MN074011,"G")))
+
+asia=data.frame(Virus=c("MT102472","KM392403"),
+Adenina=c(totales(MT102472,"A"),totales(KM392403,"A")),
+Thimina=c(totales(MT102472,"A"),totales(KM392403,"A")),
+Citosina=c(totales(MT102472,"A"),totales(KM392403,"A")),
+Guanina=c(totales(MT102472,"A"),totales(KM392403,"A")))
+
+africa=data.frame(Virus=c("JQ733142","EU502556"),
+Adenina=c(totales(JQ733142,"A"),totales(EU502556,"A")),
+Thimina=c(totales(JQ733142,"T"),totales(EU502556,"T")),
+Citosina=c(totales(JQ733142,"C"),totales(EU502556,"C")),
+Guanina=c(totales(JQ733142,"G"),totales(EU502556,"G")))
+
+oceania=data.frame(Virus=c("CY092462","MN569127","MN569127"),
+Adenina=c(totales(CY092462,"A"),totales(MN569127,"A"),totales(MN569127,"A")),
+Thimina=c(totales(CY092462,"T"),totales(MN569127,"T"),totales(MN569127,"T")),
+Citosina=c(totales(CY092462,"C"),totales(MN569127,"C"),totales(MN569127,"C")),
+Guanina=c(totales(CY092462,"G"),totales(MN569127,"G"),totales(MN569127,"G")))
+
+plotter("Africa",africa,"Podemos observar que en las variantes Africanas del virus se tiene contenidos casi identidos de nucleotidos, con excepcion de la citosina")
+plotter("America",america,"El contenido de nucleotidos en las variantes de América es bastante similar, en el caso de la Adenina, esta es mayor en el MT331377, en la Thimina es mayor el MT375632, en el caso de la Citosina el CY020413 tiene menor contenido, siendo este mismo el dominante en Guanina.")
+plotter("Asia",asia,"El contenido de nucleotidos en las variantes de Asia es similar en estas variantes pero no del todo, pues el MT102472 supera en todos aspectos al KM392403")
+plotter("Europa",europa,"El contenido de nucleotidos de ambas variantes de  Europa es similar, solo varian en Adenina y Citosina siendo el MK913190 el dominante en Adenina, y el MN74011 el dominante en Citosina")
+plotter("Mexico",mexico,"El contenido de nucleotidos es similar en las variantes Mexicanas del virus, excepto en Adenina y Citosina.")
+plotter("Oceania",oceania,"El contenido de nucleotidos es similar en las variantes de Oceania, variando mas que nada en Adenina y Citosina")
+
+
+```
+Agrega un análisis jerárquico global obtenido de las secuencias que seleccionaron para estudiar.
+```{r}
+virus <- c("MK633745","MH701684","CY125728","JQ733142","EU502556","MK913190","MN074011","MT102472","KM392403","MT331377","MT375632","CY020413","CY092462","MN569127","KP098400")
+virus_sequences <- read.GenBank(virus)
+write.dna(virus_sequences,  file ="virus_seqs.fasta", format = "fasta", append =
+FALSE, nbcol = 6, colsep = " ", colw = 10)
+virus_seq_not_align <- readDNAStringSet("virus_seqs.fasta", format = "fasta")
+virus_seq_not_align
+virus_seq_not_align <- OrientNucleotides(virus_seq_not_align)
+virus_seq_align <- AlignSeqs(virus_seq_not_align)
+BrowseSeqs(virus_seq_align, highlight=0)
+writeXStringSet(virus_seq_align, file="virus_seq_align.fasta")
+virus_aligned <- read.alignment("virus_seq_align.fasta", format = "fasta")
+matriz_distancia <- dist.alignment(virus_aligned, matrix = "similarity")
+virus_tree <- nj(matriz_distancia)
+class(virus_tree) 
+virus_tree <- ladderize(virus_tree)
+plot(virus_tree, cex = 0.6)
+title("Los distintos tipos de influenza")
+
+print("Este arbol filogenetico nos muestra un punto de divergencia principal, el cual creo 3 nodos principales de los cuales se fueron desglosando las variantes de los virus. Podemos observar que existen 3 nodos principales, por lo cual desde el inicio tenemos un punto de divergencia.Podemos observar ademas una particularidad, y es qu los virus parecen venir en pares en cuanto a su parecido, a excepcion del MK633745, el MK913190 y el EU502556")
+```

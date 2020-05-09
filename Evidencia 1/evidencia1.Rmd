@@ -1,0 +1,111 @@
+---
+title: "Evidencia 1: Analisis inicial"
+Miguel Angel Chavez Robles A01620402 grupo 801 
+---
+
+
+
+Obtén las secuencias de las variantes mexicanas del virus desde el NCBI (Enlaces a un sitio externo.) o el buscador de virus del NCBI (Enlaces a un sitio externo.).
+```{r}
+library(seqinr)
+library(ggplot2)
+
+carga_secuencias=function(archivo){
+  x=read.fasta(file = archivo, 
+  seqtype = "DNA",set.attributes = FALSE,seqonly = TRUE)
+x=unlist(x)
+x=s2c(x)
+return(x)
+}
+H1N1=carga_secuencias("Secuencias/MK633745.1.fasta")
+H3N2=carga_secuencias("Secuencias/MH701684.1.fasta")
+H7N3=carga_secuencias("Secuencias/CY125728.1.fasta")
+```
+
+Calcula el número de bases de cada variante.
+```{r}
+nucleotidos=function(x,caract){
+  return(sum(x==caract))
+}
+imprimir=function(nombre,datos){
+print(paste("El total de Adenina en el", nombre,"es",nucleotidos(datos,"A"),"lo que corresponde a un ",nucleotidos(datos,"A")/length(datos)*100,"%"))
+print(paste("El total de Thimina en el", nombre,"es",nucleotidos(datos,"T"),"lo que corresponde a un ",nucleotidos(datos,"T")/length(datos)*100,"%"))
+print(paste("El total de Citosina en el", nombre,"es",nucleotidos(datos,"C"),"lo que corresponde a un ",nucleotidos(datos,"C")/length(datos)*100,"%"))
+print(paste("El total de Guanina en el", nombre,"es",nucleotidos(datos,"G"),"lo que corresponde a un ",nucleotidos(datos,"G")/length(datos)*100,"%"))
+
+a=nucleotidos(datos,"A")
+t=nucleotidos(datos,"T")
+c=nucleotidos(datos,"C")
+g=nucleotidos(datos,"G")
+
+return(data.frame(a,t,c,g))
+
+}
+nucleotidos_H1N1=imprimir("H1N1",H1N1)
+nucleotidos_H3N2=imprimir("H3N2",H3N2)
+nucleotidos_H7N3=imprimir("H7N3",H7N3)
+
+```
+
+Crea una gráfica donde compares todas las variantes del virus y las bases de ADN que las componen.
+```{r}
+
+
+totales=function(x,caract){
+  return(sum(x==caract))
+}
+
+df2 <- data.frame(Virus=c("H1N1", "H3N2","H7N3"),
+Adenina=c(totales(H1N1,"A"),totales(H3N2,"A"),totales(H7N3,"A")),
+Thimina=c(totales(H1N1,"T"),totales(H3N2,"T"),totales(H7N3,"T")),
+Citosina=c(totales(H1N1,"C"),totales(H3N2,"C"),totales(H7N3,"C")),
+Guanina=c(totales(H1N1,"G"),totales(H3N2,"G"),totales(H7N3,"G")))
+
+
+
+ggplot(data=df2, aes(x=Virus, y=Adenina,fill=Adenina)) +
+  geom_bar(stat="identity")
+ggplot(data=df2, aes(x=Virus, y=Thimina,fill=Thimina)) +
+  geom_bar(stat="identity")
+ggplot(data=df2, aes(x=Virus, y=Citosina,fill=Citosina)) +
+  geom_bar(stat="identity")
+ggplot(data=df2, aes(x=Virus, y=Guanina,fill=Guanina)) +
+  geom_bar(stat="identity")
+
+
+print("En las graficas podemos observar que el contenido de nucleotidos de los 3 virus es muy similar entre si. Donde mas difieren es en el contenido de Adenina para el caso de la H1N1, siendo este el mayor, y en la Guanina, siendo la menor la H3N2 y la H7N3 la mayor")
+
+```
+
+¿Cuál es la composición de GC de cada variante?
+```{r}
+gc=function(secuencia,Nombre){
+    g=secuencia=="G"
+    c=secuencia=="C"
+    print(paste("El contenido de GC en el virus",Nombre,"es:",sum(g+c),"lo que corresponde a un",sum(g+c)/length(secuencia)*100,"%"))}
+gc(H1N1,"H1N1")
+gc(H3N2,"H3N2")
+gc(H7N3,"H7N3")
+```
+
+Crea las secuencias contrasentido de cada variante.
+```{r}
+complementaria <- function(secuencia) {
+  salida<-c(secuencia)
+salida=gsub("A","t",salida)
+salida=gsub("T","A",salida)
+salida=gsub("t","T",salida)
+salida=gsub("G","c",salida)
+salida=gsub("C","G",salida)
+salida=gsub("c","C",salida)
+print("Los primeros 50 elementos de la secuencia complementaria son")
+print(head(salida,50))
+return(salida)}
+
+H1N1C=complementaria(H1N1)
+H3N2C=complementaria(H3N2)
+H7N3C=complementaria(H7N3)
+```
+
+
+
